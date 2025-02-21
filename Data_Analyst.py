@@ -103,6 +103,12 @@ def split_and_download_csv(above_df, equal_df, max_rows=500):
     num_files = math.ceil(total_rows / max_rows)
     files = []
     
+    # Chuyển toàn bộ dữ liệu của cột cần xử lý về chuỗi để tránh lỗi
+    for col in above_df.columns:
+        if col in equal_df.columns:
+            above_df[col] = above_df[col].astype(str)
+            equal_df[col] = equal_df[col].astype(str)
+    
     # Chia đều dữ liệu vào các file
     above_chunks = [above_df[i::num_files] for i in range(num_files)]
     equal_chunks = [equal_df[i::num_files] for i in range(num_files)]
@@ -113,7 +119,7 @@ def split_and_download_csv(above_df, equal_df, max_rows=500):
         
         # Lưu vào file CSV ảo
         csv_buffer = BytesIO()
-        combined_chunk.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+        combined_chunk.to_csv(csv_buffer, index=False, encoding='utf-8-sig', quoting=1)  # quoting=1 để tránh lỗi chuyển đổi
         csv_buffer.seek(0)
         
         files.append((f"filtered_data_part_{i+1}.csv", csv_buffer))
